@@ -35,3 +35,7 @@ gx/uncommitted/
 
 # Makefile
 Makefile
+
+# Local planning and AI rules
+.cursor/
+PROJECT_PLAN.md
