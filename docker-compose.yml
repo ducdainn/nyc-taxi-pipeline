@@ -1,0 +1,200 @@
+## filepath: docker-compose.yml
+version: "3.8"
+
+# ─── Airflow common config (YAML anchor) ────────────────────────────
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.3
+  env_file: .env
+  environment:
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >-
+      postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    _PIP_ADDITIONAL_REQUIREMENTS: >-
+      apache-airflow-providers-apache-spark==4.8.0
+      duckdb==1.1.3
+      dbt-core==1.8.8
+      dbt-duckdb==1.8.3
+      great-expectations==0.18.19
+      loguru==0.7.2
+      python-dotenv==1.0.1
+      requests==2.32.3
+      pandas==2.2.3
+      pyarrow==17.0.0
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./scripts:/opt/airflow/scripts
+    - ./spark_jobs:/opt/airflow/spark_jobs
+    - ./dbt_nyc:/opt/airflow/dbt_nyc
+    - ./gx:/opt/airflow/gx
+    - ./data/duckdb:/opt/duckdb
+    - ./data/raw:/opt/data/raw
+    - ./data/processed:/opt/data/processed
+  networks:
+    - nyc-taxi-net
+
+services:
+  # ── PostgreSQL (Airflow + Metabase metadata) ─────────────────────
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      MB_DB_USER: ${MB_DB_USER}
+      MB_DB_PASS: ${MB_DB_PASS}
+      MB_DB_DBNAME: ${MB_DB_DBNAME}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./config/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-airflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - nyc-taxi-net
+
+  # ── Airflow Init (one-shot: migrate DB + create admin) ──────────
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate &&
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com || true
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Airflow Webserver ────────────────────────────────────────────
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Airflow Scheduler ───────────────────────────────────────────
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname \"$${HOSTNAME}\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Spark Master ─────────────────────────────────────────────────
+  spark-master:
+    image: apache/spark:3.5.1
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "7077:7077"
+      - "8181:8080"          # Master Web UI (host 8181 → container 8080)
+    volumes:
+      - ./spark_jobs:/opt/spark-jobs
+      - ./data/duckdb:/opt/duckdb
+      - ./data/raw:/opt/data/raw
+      - ./data/processed:/opt/data/processed
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - nyc-taxi-net
+
+  # ── Spark Worker ─────────────────────────────────────────────────
+  spark-worker:
+    image: apache/spark:3.5.1
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    ports:
+      - "8182:8081"          # Worker Web UI (host 8182 → container 8081)
+    volumes:
+      - ./spark_jobs:/opt/spark-jobs
+      - ./data/duckdb:/opt/duckdb
+      - ./data/raw:/opt/data/raw
+      - ./data/processed:/opt/data/processed
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8081 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - nyc-taxi-net
+
+  # ── Metabase ─────────────────────────────────────────────────────
+  metabase:
+    image: metabase/metabase:latest
+    environment:
+      MB_DB_TYPE: ${MB_DB_TYPE}
+      MB_DB_HOST: ${MB_DB_HOST}
+      MB_DB_PORT: ${MB_DB_PORT}
+      MB_DB_USER: ${MB_DB_USER}
+      MB_DB_PASS: ${MB_DB_PASS}
+      MB_DB_DBNAME: ${MB_DB_DBNAME}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/duckdb:/opt/duckdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - nyc-taxi-net
+
+# ─── Volumes ────────────────────────────────────────────────────────
+volumes:
+  postgres-data:
+
+# ─── Networks ───────────────────────────────────────────────────────
+networks:
+  nyc-taxi-net:
+    driver: bridge
+
