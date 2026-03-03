@@ -1,0 +1,41 @@
+## filepath: dbt_nyc/dbt_project.yml
+name: 'nyc_taxi'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nyc_taxi'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# ── Model configs ───────────────────────────────────────────────────
+models:
+  nyc_taxi:
+    bronze:
+      +materialized: view
+    silver:
+      +materialized: view
+    gold:
+      +materialized: table
+      fact_trips:
+        +materialized: incremental
+        +incremental_strategy: delete+insert
+        +unique_key: trip_id
+
+# ── Seed configs ────────────────────────────────────────────────────
+seeds:
+  nyc_taxi:
+    +schema: seeds
+
+# ── Vars ────────────────────────────────────────────────────────────
+vars:
+  bronze_path: "../data/processed/bronze/yellow_trips/**/*.parquet"
+
