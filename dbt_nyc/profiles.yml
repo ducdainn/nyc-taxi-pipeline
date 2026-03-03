@@ -1,0 +1,11 @@
+## filepath: dbt_nyc/profiles.yml
+nyc_taxi:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '../data/duckdb/nyc_taxi.duckdb') }}"
+      threads: 4
+      extensions:
+        - parquet
+

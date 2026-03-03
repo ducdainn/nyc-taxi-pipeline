@@ -1,0 +1,66 @@
+## filepath: dbt_nyc/models/bronze/_sources.yml
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw TLC Yellow Taxi data loaded by PySpark bronze_loader.py"
+    meta:
+      owner: "data-engineering"
+      loader: "spark_jobs/bronze_loader.py"
+    tables:
+      - name: yellow_trips
+        description: "Yellow taxi trip records with metadata columns"
+        meta:
+          partition_by: ["_year", "_month"]
+        external:
+          location: "{{ var('bronze_path') }}"
+          options:
+            hive_partitioning: true
+        columns:
+          - name: VendorID
+            description: "TPEP provider (1=CMT, 2=VeriFone)"
+          - name: tpep_pickup_datetime
+            description: "Pickup timestamp"
+          - name: tpep_dropoff_datetime
+            description: "Dropoff timestamp"
+          - name: passenger_count
+            description: "Number of passengers"
+          - name: trip_distance
+            description: "Trip distance in miles"
+          - name: RatecodeID
+            description: "Rate code (1=Standard, 2=JFK, etc.)"
+          - name: store_and_fwd_flag
+            description: "Store and forward flag (Y/N)"
+          - name: PULocationID
+            description: "Pickup TLC zone ID"
+          - name: DOLocationID
+            description: "Dropoff TLC zone ID"
+          - name: payment_type
+            description: "Payment type (1=Credit, 2=Cash, etc.)"
+          - name: fare_amount
+            description: "Base fare amount"
+          - name: extra
+            description: "Extra charges"
+          - name: mta_tax
+            description: "MTA tax"
+          - name: tip_amount
+            description: "Tip amount"
+          - name: tolls_amount
+            description: "Tolls amount"
+          - name: improvement_surcharge
+            description: "Improvement surcharge"
+          - name: total_amount
+            description: "Total trip amount"
+          - name: congestion_surcharge
+            description: "Congestion surcharge"
+          - name: Airport_fee
+            description: "Airport fee"
+          - name: _ingested_at
+            description: "Ingestion timestamp (ISO format)"
+          - name: _source_file
+            description: "Source parquet filename"
+          - name: _year
+            description: "Partition year"
+          - name: _month
+            description: "Partition month"
+
