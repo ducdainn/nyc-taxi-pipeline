@@ -39,3 +39,6 @@ seeds:
 vars:
   bronze_path: "../data/processed/bronze/yellow_trips/**/*.parquet"
 
+
+
+

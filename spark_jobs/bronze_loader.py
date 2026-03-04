@@ -143,22 +143,26 @@ def load_bronze(
     )
 
     # ── Write partitioned parquet ───────────────────────────────────
+    # Write directly to partition path to avoid "Unable to clear output directory" 
+    # error on Docker volumes (Windows host ↔ Linux container permission issues)
     partition_path = bronze_path / f"_year={year}" / f"_month={month}"
-    logger.info("Writing Bronze layer | path={}", bronze_path)
+    logger.info("Writing Bronze layer | path={}", partition_path)
+
+    # Ensure parent directories exist
+    partition_path.mkdir(parents=True, exist_ok=True)
 
     (
         df_bronze
+        .drop("_year", "_month")  # Remove partition columns from data (they're in path)
+        .coalesce(4)  # Reduce number of output files
         .write
         .mode("overwrite")
-        .partitionBy("_year", "_month")
-        .parquet(str(bronze_path))
+        .parquet(str(partition_path))
     )
 
     # ── Reconciliation ───────────────────────────────
-    df_verify = (
-        spark.read.parquet(str(bronze_path))
-        .filter(f"_year = {year} AND _month = {month}")
-    )
+    # Read directly from partition path (columns _year, _month are in path, not in data)
+    df_verify = spark.read.parquet(str(partition_path))
     output_count = df_verify.count()
 
     # ── Log reconciliation ──────────────────────────────────────────
