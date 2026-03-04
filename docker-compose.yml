@@ -3,11 +3,14 @@ version: "3.8"
 
 # ─── Airflow common config (YAML anchor) ────────────────────────────
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.9.3
+  build:
+    context: .
+    dockerfile: docker/airflow.Dockerfile
   env_file: .env
   environment:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >-
       postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
     _PIP_ADDITIONAL_REQUIREMENTS: >-
       apache-airflow-providers-apache-spark==4.8.0
       duckdb==1.1.3
@@ -15,6 +18,7 @@ x-airflow-common: &airflow-common
       dbt-duckdb==1.8.3
       great-expectations==0.18.19
       loguru==0.7.2
+      pyspark==3.5.1
       python-dotenv==1.0.1
       requests==2.32.3
       pandas==2.2.3

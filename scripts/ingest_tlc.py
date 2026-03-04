@@ -34,6 +34,7 @@ MAX_RETRIES = 3
 BACKOFF_BASE = 2          # seconds — exponential: 2, 4, 8 …
 CHUNK_SIZE = 8 * 1024     # 8 KB streaming chunks
 REQUEST_TIMEOUT = 300     # 5 min per request
+MIN_FILE_SIZE = 10_000_000  # 10 MB — valid TLC parquet files are typically 50-100 MB
 
 
 # ── Core logic ──────────────────────────────────────────────────────
@@ -69,13 +70,22 @@ def download_tlc_file(
     dest = build_dest(year, month, taxi_type)
 
     # ── Idempotency check ───────────────────────────────────────────
-    if dest.exists() and dest.stat().st_size > 0:
-        logger.info(
-            "File already exists — skipping | file={} size={:.1f} MB",
-            dest,
-            dest.stat().st_size / 1e6,
-        )
-        return dest
+    if dest.exists():
+        file_size = dest.stat().st_size
+        if file_size >= MIN_FILE_SIZE:
+            logger.info(
+                "File already exists — skipping | file={} size={:.1f} MB",
+                dest,
+                file_size / 1e6,
+            )
+            return dest
+        else:
+            logger.warning(
+                "Existing file too small (corrupt?) — re-downloading | file={} size={} bytes",
+                dest,
+                file_size,
+            )
+            dest.unlink()
 
     # ── Download with retry ─────────────────────────────────────────
     logger.info("Starting download | url={}", url)

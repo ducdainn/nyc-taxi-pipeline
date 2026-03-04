@@ -27,8 +27,17 @@ import great_expectations as gx
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BRONZE_PATH = PROJECT_ROOT / "data" / "processed" / "bronze" / "yellow_trips"
-GX_DIR = PROJECT_ROOT / "gx"
+GX_DIR = Path(__file__).resolve().parent
+
+# Resolve BRONZE_PATH: prefer env var, fall back to PROJECT_ROOT-relative path.
+# .env has container paths (/opt/data/processed) which don't exist on the host,
+# so we check existence and fall back to the local dev path.
+_env_processed = os.getenv("PROCESSED_DATA_PATH", "")
+_local_processed = str(PROJECT_ROOT / "data" / "processed")
+PROCESSED_DATA_PATH = (
+    _env_processed if _env_processed and Path(_env_processed).exists() else _local_processed
+)
+BRONZE_PATH = Path(PROCESSED_DATA_PATH) / "bronze" / "yellow_trips"
 
 # All required columns in the Bronze schema
 REQUIRED_COLUMNS = [
