@@ -27,9 +27,45 @@ except ImportError:
 
 load_dotenv()
 
-DUCKDB_PATH = os.getenv("DUCKDB_PATH", "/opt/data/processed/nyc_taxi.duckdb")
-GX_DIR = Path(__file__).parent
-MAX_SAMPLE_ROWS = 200_000
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+GX_DIR = Path(__file__).resolve().parent
+
+# Resolve BRONZE_PATH: prefer env var, fall back to PROJECT_ROOT-relative path.
+# .env has container paths (/opt/data/processed) which don't exist on the host,
+# so we check existence and fall back to the local dev path.
+_env_processed = os.getenv("PROCESSED_DATA_PATH", "")
+_local_processed = str(PROJECT_ROOT / "data" / "processed")
+PROCESSED_DATA_PATH = (
+    _env_processed if _env_processed and Path(_env_processed).exists() else _local_processed
+)
+BRONZE_PATH = Path(PROCESSED_DATA_PATH) / "bronze" / "yellow_trips"
+
+# All required columns in the Bronze schema
+REQUIRED_COLUMNS = [
+    "VendorID",
+    "tpep_pickup_datetime",
+    "tpep_dropoff_datetime",
+    "passenger_count",
+    "trip_distance",
+    "RatecodeID",
+    "store_and_fwd_flag",
+    "PULocationID",
+    "DOLocationID",
+    "payment_type",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tip_amount",
+    "tolls_amount",
+    "improvement_surcharge",
+    "total_amount",
+    "congestion_surcharge",
+    "Airport_fee",
+    "_ingested_at",
+    "_source_file",
+    # _year and _month are Spark partition columns (encoded in directory names,
+    # not stored inside the parquet files), so we skip them here.
+]
 
 
 def load_bronze_data() -> pd.DataFrame:

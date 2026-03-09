@@ -73,3 +73,6 @@ enriched as (
 
 select * from enriched
 
+
+
+
