@@ -1,3 +1,4 @@
+## filepath: dbt_nyc/dbt_project.yml
 name: 'nyc_taxi'
 version: '1.0.0'
 config-version: 2
@@ -15,10 +16,13 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
+# ── Model configs ───────────────────────────────────────────────────
 models:
   nyc_taxi:
+    bronze:
+      +materialized: view
     silver:
-      +materialized: table
+      +materialized: view
     gold:
       +materialized: table
       fact_trips:
@@ -26,12 +30,13 @@ models:
         +incremental_strategy: delete+insert
         +unique_key: trip_id
 
+# ── Seed configs ────────────────────────────────────────────────────
 seeds:
   nyc_taxi:
     +schema: seeds
 
-vars:
-  bronze_path: "../data/processed/bronze/yellow_trips/**/*.parquet"
+# ── Vars ────────────────────────────────────────────────────────────
+# No longer using parquet files - reading directly from DuckDB bronze schema
 
 
 
