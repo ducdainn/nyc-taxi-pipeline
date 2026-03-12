@@ -29,8 +29,8 @@ GX_DIR = "/opt/airflow/gx"
 DBT_DIR = "/opt/airflow/dbt_nyc"
 DBT_PROFILES_DIR = "/opt/airflow/dbt_nyc"
 
-YEAR_TMPL = "{{ (execution_date - macros.timedelta(days=execution_date.day)).year }}"
-MONTH_TMPL = "{{ (execution_date - macros.timedelta(days=execution_date.day)).month }}"
+YEAR_TMPL = "{{ (execution_date - macros.timedelta(days=execution_date.day + 365)).year }}"
+MONTH_TMPL = "{{ (execution_date - macros.timedelta(days=execution_date.day + 365)).month }}"
 
 
 def _on_failure(context):
@@ -46,8 +46,7 @@ with DAG(
     default_args=default_args,
     description="NYC Taxi ELT: ingest → bronze → validate → silver → gold → test",
     schedule="0 6 5 * *",
-    start_date=datetime(2025, 3, 5),
-    end_date=datetime(2025, 4, 15),
+    start_date=datetime(2026, 1, 5),
     catchup=True,
     max_active_runs=1,
     tags=["nyc-taxi", "elt", "medallion"],
