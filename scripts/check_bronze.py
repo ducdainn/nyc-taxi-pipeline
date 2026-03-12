@@ -1,6 +1,6 @@
 import duckdb
 
-con = duckdb.connect('data/duckdb/nyc_taxi.duckdb')
+con = duckdb.connect('data/processed/nyc_taxi.duckdb')
 
 con.execute("""
     CREATE OR REPLACE VIEW yellow_bronze AS 

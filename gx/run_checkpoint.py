@@ -39,6 +39,8 @@ PROCESSED_DATA_PATH = (
     _env_processed if _env_processed and Path(_env_processed).exists() else _local_processed
 )
 BRONZE_PATH = Path(PROCESSED_DATA_PATH) / "bronze" / "yellow_trips"
+DUCKDB_PATH = os.getenv("DUCKDB_PATH", "/opt/data/processed/nyc_taxi.duckdb")
+MAX_SAMPLE_ROWS = os.getenv("MAX_SAMPLE_ROWS", 10000)
 
 # All required columns in the Bronze schema
 REQUIRED_COLUMNS = [
