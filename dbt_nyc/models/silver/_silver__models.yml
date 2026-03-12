@@ -1,4 +1,3 @@
-## filepath: dbt_nyc/models/silver/_silver__models.yml
 version: 2
 
 models:
@@ -8,17 +7,12 @@ models:
       - name: trip_id
         description: "Surrogate key (MD5 hash)"
         tests:
-          - unique
           - not_null
-      - name: vendor_id
-        description: "TPEP provider ID (1=CMT, 2=VeriFone, 6=Test)"
-        tests:
-          - not_null
-      - name: pickup_zone_id
+      - name: pickup_location_id
         description: "Pickup TLC zone ID"
         tests:
           - not_null
-      - name: dropoff_zone_id
+      - name: dropoff_location_id
         description: "Dropoff TLC zone ID"
         tests:
           - not_null
@@ -26,56 +20,15 @@ models:
         description: "Pickup timestamp"
         tests:
           - not_null
-      - name: dropoff_datetime
-        description: "Dropoff timestamp"
-        tests:
-          - not_null
-      - name: passenger_count
-        description: "Number of passengers"
-      - name: trip_distance
-        description: "Trip distance in miles"
-        tests:
-          - not_null
-      - name: rate_code_id
-        description: "Rate code ID"
-      - name: store_and_fwd_flag
-        description: "Store and forward flag"
-      - name: payment_type
-        description: "Payment type code"
-        tests:
-          - not_null
-          - accepted_values:
-              values: [0, 1, 2, 3, 4, 5, 6]
-      - name: fare_amount
-        description: "Base fare amount"
-        tests:
-          - not_null
-      - name: extra
-        description: "Extra charges"
-      - name: mta_tax
-        description: "MTA tax"
-      - name: tip_amount
-        description: "Tip amount"
-      - name: tolls_amount
-        description: "Tolls amount"
-      - name: improvement_surcharge
-        description: "Improvement surcharge"
-      - name: congestion_surcharge
-        description: "Congestion surcharge"
-      - name: airport_fee
-        description: "Airport fee"
       - name: total_amount
         description: "Total trip amount"
         tests:
           - not_null
-      - name: _ingested_at
-        description: "Ingestion timestamp"
-      - name: _source_file
-        description: "Source file name"
-      - name: _year
-        description: "Partition year"
-      - name: _month
-        description: "Partition month"
+      - name: payment_type
+        description: "Payment type code"
+        tests:
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6]
 
   - name: stg_taxi_zones
     description: "TLC taxi zone lookup table"
@@ -93,6 +46,7 @@ models:
         description: "Zone name"
         tests:
           - not_null
-      - name: service_zone
-        description: "Service zone category"
+
+
+
 

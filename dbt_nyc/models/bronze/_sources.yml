@@ -1,24 +1,15 @@
-## filepath: dbt_nyc/models/bronze/_sources.yml
 version: 2
 
 sources:
   - name: bronze
-    description: "Raw TLC Yellow Taxi data loaded by PySpark bronze_loader.py"
-    meta:
-      owner: "data-engineering"
-      loader: "spark_jobs/bronze_loader.py"
+    description: "Raw TLC Yellow Taxi data loaded by bronze_loader.py into DuckDB"
+    schema: bronze
     tables:
       - name: yellow_trips
         description: "Yellow taxi trip records with metadata columns"
-        meta:
-          partition_by: ["_year", "_month"]
-        external:
-          location: "{{ var('bronze_path') }}"
-          options:
-            hive_partitioning: true
         columns:
           - name: VendorID
-            description: "TPEP provider (1=CMT, 2=VeriFone)"
+            description: "TPEP provider code"
           - name: tpep_pickup_datetime
             description: "Pickup timestamp"
           - name: tpep_dropoff_datetime
@@ -28,17 +19,17 @@ sources:
           - name: trip_distance
             description: "Trip distance in miles"
           - name: RatecodeID
-            description: "Rate code (1=Standard, 2=JFK, etc.)"
+            description: "Rate code"
           - name: store_and_fwd_flag
-            description: "Store and forward flag (Y/N)"
+            description: "Store and forward flag"
           - name: PULocationID
-            description: "Pickup TLC zone ID"
+            description: "Pickup location zone ID"
           - name: DOLocationID
-            description: "Dropoff TLC zone ID"
+            description: "Dropoff location zone ID"
           - name: payment_type
-            description: "Payment type (1=Credit, 2=Cash, etc.)"
+            description: "Payment type code"
           - name: fare_amount
-            description: "Base fare amount"
+            description: "Fare amount"
           - name: extra
             description: "Extra charges"
           - name: mta_tax
@@ -50,20 +41,16 @@ sources:
           - name: improvement_surcharge
             description: "Improvement surcharge"
           - name: total_amount
-            description: "Total trip amount"
+            description: "Total amount"
           - name: congestion_surcharge
             description: "Congestion surcharge"
           - name: Airport_fee
             description: "Airport fee"
           - name: _ingested_at
-            description: "Ingestion timestamp (ISO format)"
+            description: "Ingestion timestamp (metadata)"
           - name: _source_file
-            description: "Source parquet filename"
+            description: "Source file name (metadata)"
           - name: _year
-            description: "Partition year"
+            description: "Year partition key (metadata)"
           - name: _month
-            description: "Partition month"
-
-
-
-
+            description: "Month partition key (metadata)"

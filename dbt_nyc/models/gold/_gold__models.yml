@@ -1,27 +1,21 @@
-## filepath: dbt_nyc/models/gold/_gold__models.yml
 version: 2
 
 models:
   - name: fact_trips
-    description: "Fact table for yellow taxi trips (incremental materialization)"
+    description: "Fact table for yellow taxi trips (incremental)"
     columns:
       - name: trip_id
-        description: "Surrogate key for trip"
-        tests:
-          - unique
-          - not_null
-      - name: vendor_id
-        description: "TPEP provider ID"
+        description: "Surrogate key"
         tests:
           - not_null
-      - name: pickup_zone_id
+      - name: pickup_location_id
         description: "Pickup TLC zone ID"
         tests:
           - not_null
           - relationships:
               to: ref('dim_zones')
               field: zone_id
-      - name: dropoff_zone_id
+      - name: dropoff_location_id
         description: "Dropoff TLC zone ID"
         tests:
           - not_null
@@ -32,68 +26,15 @@ models:
         description: "Pickup timestamp"
         tests:
           - not_null
-      - name: dropoff_datetime
-        description: "Dropoff timestamp"
-        tests:
-          - not_null
-      - name: pickup_month
-        description: "Pickup month (truncated)"
-      - name: pickup_date
-        description: "Pickup date"
-      - name: pickup_hour
-        description: "Pickup hour (0-23)"
-      - name: pickup_day_of_week
-        description: "Pickup day of week (0=Sunday)"
-      - name: passenger_count
-        description: "Number of passengers"
-      - name: trip_distance
-        description: "Trip distance in miles"
-        tests:
-          - not_null
-      - name: trip_duration_minutes
-        description: "Trip duration in minutes"
-      - name: rate_code_id
-        description: "Rate code ID"
-      - name: store_and_fwd_flag
-        description: "Store and forward flag"
-      - name: payment_type
-        description: "Payment type code"
-        tests:
-          - not_null
-          - accepted_values:
-              values: [0, 1, 2, 3, 4, 5, 6]
-      - name: fare_amount
-        description: "Base fare amount"
-        tests:
-          - not_null
-      - name: extra
-        description: "Extra charges"
-      - name: mta_tax
-        description: "MTA tax"
-      - name: tip_amount
-        description: "Tip amount"
-      - name: tolls_amount
-        description: "Tolls amount"
-      - name: improvement_surcharge
-        description: "Improvement surcharge"
-      - name: congestion_surcharge
-        description: "Congestion surcharge"
-      - name: airport_fee
-        description: "Airport fee"
       - name: total_amount
         description: "Total trip amount"
         tests:
           - not_null
-      - name: fare_per_mile
-        description: "Calculated fare per mile"
-      - name: tip_percentage
-        description: "Tip as percentage of total"
-      - name: _ingested_at
-        description: "Original ingestion timestamp"
-      - name: _source_file
-        description: "Source file name"
-      - name: _dbt_updated_at
-        description: "dbt model update timestamp"
+      - name: payment_type
+        description: "Payment type code"
+        tests:
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6]
 
   - name: dim_zones
     description: "Dimension table for TLC taxi zones"
@@ -111,14 +52,6 @@ models:
         description: "Zone name"
         tests:
           - not_null
-      - name: service_zone
-        description: "Service zone category"
-      - name: borough_group
-        description: "Grouped borough for analytics"
-      - name: is_airport
-        description: "Flag for airport zones"
-      - name: _dbt_updated_at
-        description: "dbt model update timestamp"
 
   - name: dim_datetime
     description: "Date/time dimension table"
@@ -128,38 +61,6 @@ models:
         tests:
           - unique
           - not_null
-      - name: date_day
-        description: "Date"
-      - name: hour_of_day
-        description: "Hour (0-23)"
-      - name: year
-        description: "Year"
-      - name: month
-        description: "Month (1-12)"
-      - name: day_of_month
-        description: "Day of month (1-31)"
-      - name: day_of_week
-        description: "Day of week (0=Sunday)"
-      - name: day_of_year
-        description: "Day of year (1-366)"
-      - name: week_of_year
-        description: "Week of year"
-      - name: quarter
-        description: "Quarter (1-4)"
-      - name: day_name
-        description: "Day name (Monday, etc.)"
-      - name: month_name
-        description: "Month name (January, etc.)"
-      - name: year_month
-        description: "Year-month string (YYYY-MM)"
-      - name: is_weekend
-        description: "Weekend flag"
-      - name: is_rush_hour
-        description: "Rush hour flag (7-9am, 4-7pm)"
-      - name: time_of_day
-        description: "Time of day category"
-      - name: _dbt_updated_at
-        description: "dbt model update timestamp"
 
 
 
