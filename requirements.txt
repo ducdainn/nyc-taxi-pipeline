@@ -1,9 +1,5 @@
 # Orchestration
 apache-airflow==2.9.3
-apache-airflow-providers-apache-spark==4.8.0
-
-# Processing
-pyspark==3.5.3
 
 # Data Warehouse / DB
 duckdb==1.1.3

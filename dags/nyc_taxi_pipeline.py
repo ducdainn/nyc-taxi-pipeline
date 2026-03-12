@@ -46,7 +46,7 @@ with DAG(
     default_args=default_args,
     description="NYC Taxi ELT: ingest → bronze → validate → silver → gold → test",
     schedule="0 6 5 * *",
-    start_date=datetime(2026, 1, 5),
+    start_date=datetime(2026, 2, 5),
     catchup=True,
     max_active_runs=1,
     tags=["nyc-taxi", "elt", "medallion"],
