@@ -1,4 +1,4 @@
--- filepath: dbt_nyc/models/silver/stg_taxi_zones.sql
+-- depends_on: {{ ref('taxi_zones') }}
 {{
     config(
         materialized='view',

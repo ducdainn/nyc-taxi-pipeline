@@ -92,6 +92,7 @@ services:
     build:
       context: .
       dockerfile: docker/metabase.Dockerfile
+    user: root
     ports:
       - "3000:3000"
     environment:
@@ -102,8 +103,8 @@ services:
       MB_DB_PASS: metabase
       MB_DB_DBNAME: metabase
       MB_PLUGINS_DIR: /plugins
-      JAVA_OPTS: "-Xmx2g"
     volumes:
+      - ./metabase-plugins:/plugins
       - ./data:/opt/data
     depends_on:
       postgres:

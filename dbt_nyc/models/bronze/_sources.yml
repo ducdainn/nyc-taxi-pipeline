@@ -3,19 +3,14 @@ version: 2
 
 sources:
   - name: bronze
-    description: "Raw TLC Yellow Taxi data loaded by PySpark bronze_loader.py"
+    description: "Raw TLC Yellow Taxi data loaded by bronze_loader.py into DuckDB"
+    schema: bronze
     meta:
       owner: "data-engineering"
-      loader: "spark_jobs/bronze_loader.py"
+      loader: "processing/bronze_loader.py"
     tables:
       - name: yellow_trips
         description: "Yellow taxi trip records with metadata columns"
-        meta:
-          partition_by: ["_year", "_month"]
-        external:
-          location: "{{ var('bronze_path') }}"
-          options:
-            hive_partitioning: true
         columns:
           - name: VendorID
             description: "TPEP provider (1=CMT, 2=VeriFone)"
@@ -63,7 +58,3 @@ sources:
             description: "Partition year"
           - name: _month
             description: "Partition month"
-
-
-
-

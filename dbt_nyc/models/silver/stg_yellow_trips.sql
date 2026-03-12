@@ -7,10 +7,7 @@
 }}
 
 with source as (
-    select * from read_parquet(
-        '{{ var("bronze_path") }}',
-        hive_partitioning = true
-    )
+    select * from {{ source('bronze', 'yellow_trips') }}
 ),
 
 renamed as (
@@ -112,7 +109,3 @@ select
     
 from deduplicated
 where _row_num = 1
-
-
-
-

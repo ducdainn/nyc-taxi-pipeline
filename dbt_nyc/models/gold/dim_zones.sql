@@ -1,4 +1,3 @@
--- filepath: dbt_nyc/models/gold/dim_zones.sql
 {{
     config(
         materialized='table',
@@ -16,8 +15,6 @@ final as (
         borough,
         zone_name,
         service_zone,
-        
-        -- Borough groupings for analytics
         case borough
             when 'Manhattan' then 'Manhattan'
             when 'Brooklyn' then 'Brooklyn'
@@ -27,15 +24,11 @@ final as (
             when 'EWR' then 'Airport'
             else 'Unknown'
         end as borough_group,
-        
-        -- Airport flag
         case 
             when zone_name like '%Airport%' or borough = 'EWR' then true
             else false
         end as is_airport,
-        
         current_timestamp as _dbt_updated_at
-        
     from zones
 )
 

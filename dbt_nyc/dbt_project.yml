@@ -36,8 +36,7 @@ seeds:
     +schema: seeds
 
 # ── Vars ────────────────────────────────────────────────────────────
-vars:
-  bronze_path: "../data/processed/bronze/yellow_trips/**/*.parquet"
+# No longer using parquet files - reading directly from DuckDB bronze schema
 
 
 
