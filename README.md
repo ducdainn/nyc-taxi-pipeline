@@ -10,6 +10,17 @@
 
 ---
 
+## 📊 Dashboard Preview
+
+![NYC Taxi Analytics Dashboard](docs/screenshots/dashboard.png)
+
+**Key Metrics:**
+- 💰 **$289.9M** Total Revenue
+- 🚖 **10.7M** Total Trips  
+- 📍 **$16.37** Revenue per Mile
+
+---
+
 ## 📋 Overview
 
 An end-to-end **Modern ELT pipeline** ingesting NYC TLC Yellow Taxi public data (~3M rows/month), processing through a **Medallion architecture** (Bronze → Silver → Gold), and serving analytics via a **Metabase dashboard**.
