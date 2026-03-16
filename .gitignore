@@ -42,4 +42,4 @@ Makefile
 
 # Local planning and AI rules
 .cursor/
-PROJECT_PLAN.md
+PROJECT_PLAN.mddbt_nyc/.user.yml
