@@ -15,6 +15,7 @@ __pycache__/
 .pytest_cache/
 
 # dbt
+dbt_nyc/.user.yml
 dbt_nyc/target/
 dbt_nyc/dbt_packages/
 dbt_nyc/logs/
@@ -29,6 +30,9 @@ airflow.db
 
 # Great Expectations
 gx/uncommitted/
+
+# Metabase plugins (downloaded at runtime)
+metabase-plugins/
 
 # OS
 .DS_Store
